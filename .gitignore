@@ -48,3 +48,6 @@ coverage/
 .cache/
 .parcel-cache/
 .vite/
+
+# Personal notes
+idea brief.md
