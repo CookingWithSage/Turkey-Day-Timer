@@ -1,5 +1,6 @@
 // Input validation functions
-// TODO: Implement in Phase 2
+import { isAfter } from 'date-fns'
+import { MIN_TURKEY_WEIGHT, MAX_TURKEY_WEIGHT } from '../constants/turkey.js'
 
 /**
  * Validate turkey weight
@@ -7,7 +8,19 @@
  * @returns {Object} { isValid: boolean, error: string|null }
  */
 export function validateWeight(weight) {
-  // TODO: Implement
+  // Check if weight is a number
+  if (typeof weight !== 'number' || isNaN(weight)) {
+    return { isValid: false, error: 'Weight must be a valid number' }
+  }
+
+  // Check if weight is within valid range
+  if (weight < MIN_TURKEY_WEIGHT || weight > MAX_TURKEY_WEIGHT) {
+    return {
+      isValid: false,
+      error: `Weight must be between ${MIN_TURKEY_WEIGHT} and ${MAX_TURKEY_WEIGHT} pounds`
+    }
+  }
+
   return { isValid: true, error: null }
 }
 
@@ -17,7 +30,17 @@ export function validateWeight(weight) {
  * @returns {Object} { isValid: boolean, error: string|null }
  */
 export function validateServingTime(servingTime) {
-  // TODO: Implement
+  // Check if servingTime is a valid Date object
+  if (!(servingTime instanceof Date) || isNaN(servingTime.getTime())) {
+    return { isValid: false, error: 'Serving time must be a valid date' }
+  }
+
+  // Check if serving time is in the future
+  const now = new Date()
+  if (!isAfter(servingTime, now)) {
+    return { isValid: false, error: 'Serving time must be in the future' }
+  }
+
   return { isValid: true, error: null }
 }
 
@@ -29,6 +52,27 @@ export function validateServingTime(servingTime) {
  * @returns {Object} { isValid: boolean, errors: Object }
  */
 export function validateInputs(weight, status, servingTime) {
-  // TODO: Implement
-  return { isValid: true, errors: {} }
+  const errors = {}
+
+  // Validate weight
+  const weightValidation = validateWeight(weight)
+  if (!weightValidation.isValid) {
+    errors.weight = weightValidation.error
+  }
+
+  // Validate status
+  if (status !== 'fresh' && status !== 'frozen') {
+    errors.status = 'Status must be either "fresh" or "frozen"'
+  }
+
+  // Validate serving time
+  const timeValidation = validateServingTime(servingTime)
+  if (!timeValidation.isValid) {
+    errors.servingTime = timeValidation.error
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  }
 }

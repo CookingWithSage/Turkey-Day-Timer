@@ -1,5 +1,11 @@
 // Core calculation logic for turkey timing
-// TODO: Implement in Phase 2
+import { subMinutes, subHours, differenceInHours, isBefore } from 'date-fns'
+import {
+  COOK_TIME_PER_LB,
+  OVEN_PREHEAT_TIME,
+  REST_TIME,
+  THAW_TIME_PER_LB
+} from '../constants/turkey.js'
 
 /**
  * Calculate total cook time (including preheat)
@@ -7,8 +13,8 @@
  * @returns {number} Total cook time in minutes
  */
 export function calculateCookTime(weightLbs) {
-  // TODO: Implement
-  return 0
+  const cookTimeMinutes = weightLbs * COOK_TIME_PER_LB
+  return cookTimeMinutes + OVEN_PREHEAT_TIME
 }
 
 /**
@@ -17,8 +23,7 @@ export function calculateCookTime(weightLbs) {
  * @returns {number} Thaw time in hours
  */
 export function calculateThawTime(weightLbs) {
-  // TODO: Implement
-  return 0
+  return weightLbs * THAW_TIME_PER_LB
 }
 
 /**
@@ -29,8 +34,38 @@ export function calculateThawTime(weightLbs) {
  * @returns {Object} Schedule with all key times
  */
 export function calculateSchedule(weightLbs, isFrozen, servingTime) {
-  // TODO: Implement
-  return {}
+  const totalCookTimeMinutes = calculateCookTime(weightLbs)
+  const cookTimeMinutes = weightLbs * COOK_TIME_PER_LB
+
+  // Work backwards from serving time
+  // Step 1: Account for resting time
+  const removeFromOven = subMinutes(servingTime, REST_TIME)
+
+  // Step 2: Account for cook time (not including preheat)
+  const putInOven = subMinutes(removeFromOven, cookTimeMinutes)
+
+  // Step 3: Account for preheat
+  const startPreheat = subMinutes(putInOven, OVEN_PREHEAT_TIME)
+
+  // Step 4: If frozen, account for thaw time
+  let startThawing = null
+  if (isFrozen) {
+    const thawTimeHours = calculateThawTime(weightLbs)
+    startThawing = subHours(startPreheat, thawTimeHours)
+  }
+
+  return {
+    servingTime,
+    removeFromOven,
+    putInOven,
+    startPreheat,
+    startThawing,
+    totalCookTimeMinutes,
+    cookTimeMinutes,
+    preheatTimeMinutes: OVEN_PREHEAT_TIME,
+    restTimeMinutes: REST_TIME,
+    thawTimeHours: isFrozen ? calculateThawTime(weightLbs) : 0
+  }
 }
 
 /**
@@ -40,8 +75,8 @@ export function calculateSchedule(weightLbs, isFrozen, servingTime) {
  * @returns {boolean} True if enough time, false otherwise
  */
 export function hasEnoughThawTime(startThawingTime, currentTime = new Date()) {
-  // TODO: Implement
-  return true
+  // If startThawingTime is in the past (before current time), we have enough time
+  return isBefore(startThawingTime, currentTime)
 }
 
 /**
@@ -51,6 +86,6 @@ export function hasEnoughThawTime(startThawingTime, currentTime = new Date()) {
  * @returns {boolean} True if <1 hour until cook time
  */
 export function isCookingImminent(startCookingTime, currentTime = new Date()) {
-  // TODO: Implement
-  return false
+  const hoursDifference = differenceInHours(startCookingTime, currentTime)
+  return hoursDifference < 1 && isBefore(currentTime, startCookingTime)
 }
