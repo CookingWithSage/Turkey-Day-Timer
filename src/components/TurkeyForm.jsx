@@ -63,124 +63,131 @@ function TurkeyForm({ onSubmit }) {
   }
 
   const isFormValid = () => {
-    if (!weight || !servingDate || !servingTime) {
-      console.log('Form incomplete:', { weight, servingDate, servingTime })
-      return false
-    }
+    if (!weight || !servingDate || !servingTime) return false
     const weightNum = parseFloat(weight)
     const dateTime = new Date(`${servingDate}T${servingTime}`)
-    console.log('Validating:', { weightNum, status, dateTime })
     const validation = validateInputs(weightNum, status, dateTime)
-    console.log('Validation result:', validation)
     return validation.isValid
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* DEBUG INFO */}
-      <div className="bg-gray-100 p-3 rounded text-xs">
-        <strong>Debug Info:</strong>
-        <div>Weight: {weight || 'empty'}</div>
-        <div>Date: {servingDate || 'empty'}</div>
-        <div>Time: {servingTime || 'empty'}</div>
-        <div>Form Valid: {isFormValid() ? 'YES' : 'NO'}</div>
-        <div>Errors: {JSON.stringify(errors)}</div>
-      </div>
-
+    <form onSubmit={handleSubmit} className="space-y-6" aria-label="Turkey cooking calculator form">
       {/* Weight Input */}
       <div>
-        <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="weight" className="block text-sm md:text-base font-medium text-gray-700 mb-2">
           Turkey Weight (lbs)
         </label>
         <input
           type="number"
           id="weight"
+          name="weight"
           min={MIN_TURKEY_WEIGHT}
           max={MAX_TURKEY_WEIGHT}
           step="0.5"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
           onBlur={handleWeightBlur}
-          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+          className={`w-full px-4 py-3 md:py-2 border rounded-lg text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors ${
             touched.weight && errors.weight ? 'border-red-500' : 'border-gray-300'
           }`}
           placeholder="Enter weight (8-30 lbs)"
+          aria-describedby="weight-helper weight-error"
+          aria-invalid={touched.weight && errors.weight ? 'true' : 'false'}
         />
-        <p className="text-xs text-gray-500 mt-1">Typically 1-1.5 lbs per person</p>
+        <p id="weight-helper" className="text-xs md:text-sm text-gray-500 mt-1">
+          Typically 1-1.5 lbs per person
+        </p>
         {touched.weight && errors.weight && (
-          <p className="text-sm text-red-600 mt-1">{errors.weight}</p>
+          <p id="weight-error" className="text-sm text-red-600 mt-1" role="alert">
+            {errors.weight}
+          </p>
         )}
       </div>
 
       {/* Status Radio Buttons */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <fieldset>
+        <legend className="block text-sm md:text-base font-medium text-gray-700 mb-2">
           Turkey Status
-        </label>
-        <div className="flex gap-4">
-          <label className="flex items-center cursor-pointer">
+        </legend>
+        <div className="flex gap-4 md:gap-6">
+          <label className="flex items-center cursor-pointer min-h-[44px]">
             <input
               type="radio"
               name="status"
               value="fresh"
               checked={status === 'fresh'}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-4 h-4 text-orange-600 focus:ring-orange-500"
+              className="w-5 h-5 md:w-4 md:h-4 text-orange-600 focus:ring-orange-500 focus:ring-2"
+              aria-label="Fresh turkey"
             />
-            <span className="ml-2 text-gray-700">Fresh</span>
+            <span className="ml-2 text-base md:text-sm text-gray-700">Fresh</span>
           </label>
-          <label className="flex items-center cursor-pointer">
+          <label className="flex items-center cursor-pointer min-h-[44px]">
             <input
               type="radio"
               name="status"
               value="frozen"
               checked={status === 'frozen'}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-4 h-4 text-orange-600 focus:ring-orange-500"
+              className="w-5 h-5 md:w-4 md:h-4 text-orange-600 focus:ring-orange-500 focus:ring-2"
+              aria-label="Frozen turkey"
             />
-            <span className="ml-2 text-gray-700">Frozen</span>
+            <span className="ml-2 text-base md:text-sm text-gray-700">Frozen</span>
           </label>
         </div>
-      </div>
+      </fieldset>
 
       {/* Serving Date & Time */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">
           Serving Date & Time
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input
             type="date"
+            name="serving-date"
             value={servingDate}
             onChange={(e) => setServingDate(e.target.value)}
             onBlur={handleServingDateTimeBlur}
-            className={`px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+            className={`px-4 py-3 md:py-2 border rounded-lg text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors ${
               touched.servingTime && errors.servingTime ? 'border-red-500' : 'border-gray-300'
             }`}
+            aria-label="Serving date"
+            aria-describedby="datetime-error"
+            aria-invalid={touched.servingTime && errors.servingTime ? 'true' : 'false'}
           />
           <input
             type="time"
+            name="serving-time"
             value={servingTime}
             onChange={(e) => setServingTime(e.target.value)}
             onBlur={handleServingDateTimeBlur}
-            className={`px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+            className={`px-4 py-3 md:py-2 border rounded-lg text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors ${
               touched.servingTime && errors.servingTime ? 'border-red-500' : 'border-gray-300'
             }`}
+            aria-label="Serving time"
+            aria-describedby="datetime-error"
+            aria-invalid={touched.servingTime && errors.servingTime ? 'true' : 'false'}
           />
         </div>
         {touched.servingTime && errors.servingTime && (
-          <p className="text-sm text-red-600 mt-1">{errors.servingTime}</p>
+          <p id="datetime-error" className="text-sm text-red-600 mt-1" role="alert">
+            {errors.servingTime}
+          </p>
         )}
       </div>
 
       {/* Submit Button */}
-      <Button
-        type="submit"
-        variant="primary"
-        disabled={!isFormValid()}
-      >
-        Calculate Schedule
-      </Button>
+      <div className="pt-2">
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={!isFormValid()}
+          aria-label="Calculate turkey cooking schedule"
+        >
+          Calculate Schedule
+        </Button>
+      </div>
     </form>
   )
 }
